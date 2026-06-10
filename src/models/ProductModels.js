@@ -38,10 +38,7 @@ const productSchema = new mongoose.Schema(
             min: [0, "Compare price cannot be negative"],
         
         },
-        isNew: { 
-            type: Boolean, 
-            default: false 
-        },
+        
         category: {
             type: String,
             required: [true, "Category is required"],
