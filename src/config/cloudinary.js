@@ -11,8 +11,7 @@ cloudinary.config({
 const productStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder:         "ecommerce/assets",
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "svg", "jfif"],
     transformation: [{ width: 1200, height: 1200, crop: "limit", quality: "auto" }],
   },
 });
@@ -20,8 +19,7 @@ const productStorage = new CloudinaryStorage({
 const avatarStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder:         "ecommerce/avatars",
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "svg", "jfif"],
     transformation: [{ width: 300, height: 300, crop: "fill", gravity: "face", quality: "auto" }],
   },
 });
@@ -30,7 +28,7 @@ const imageFileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed (jpg, jpeg, png, webp)"), false);
+    cb(new Error("Only image files are allowed (jpg, jpeg, png, webp, svg, jfif)"), false);
   }
 };
 
