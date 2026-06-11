@@ -11,12 +11,13 @@ app.use(cors({
 })); 
 
 const productRoutes = require('./routes/productRoutes');
-
+const authRoutes = require('./routes/authRoutes');
 
 app.use(express.json());
 app.use(morgan('dev'));
 
 app.use("/api/products", productRoutes);
+app.use("/api/auth",     authRoutes);
 
 app.get('/', (req, res) => {
   res.json({
