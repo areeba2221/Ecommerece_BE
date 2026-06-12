@@ -1,6 +1,7 @@
 const Product = require('../models/ProductModels');
 const cloudinary = require('../config/cloudinary');
 const { deleteImage } = require('../config/cloudinary');
+const { json } = require('express');
 
 const getProducts = async (req, res) => {
   try {
@@ -173,6 +174,59 @@ const updateProduct = async (req, res) => {
   }
 };
 
+const updateProductDetails = async (req, res) => {
+  try {
+    const { tags, attributes, description, comparePrice, isFeatured } = res.body;
+
+    const product = await Product.findOne({_id: req.params.id, isActive: true});
+    if(!product) {
+      return res.status(404).json({success: false, message: "Product not found"});
+    }
+    const updates = {};
+    if (tags !== undefined) {
+      try {
+        updates.tags = typeof tags === "string" ? JSON.parse(tags) : tags;
+      } catch {
+        return res.status(400).json({success: false, message: "tags must ba valid JSON array"});
+      }
+    }
+    if(attributes != undefined) {
+      let parsedAttributes;
+      try {
+        parsedAttributes = typeof attributes === "string" ? JSON.parse(attributes) : attributes;
+      } catch {
+        return res.status(400).json({success: false, message: "attributes must ba valid JSON array"});
+      }
+      const existing = product.attributes
+      ? Object.fromEntries(products.attributes) : {};
+      updates.attributes = {...existing, ...parsedAttributes};
+    }
+    if(brand  !== undefined) updates.brand   =  brand;
+    if(sku  !== undefined) updates.sku  =  sku;
+    if(comparePrice   !== undefined) updates.comparePrice = comparePrice === "" ? null : Number(comparePrice);
+    if(isFeatured  !== undefined) updates.isFeatured = isFeatured === "true" || isFeatured === true;
+
+    if(Object.keys(updates).length === 0) {
+      return res.status(400).json({success: false,
+         message: "One feild is required: tags, attributes, description, brand, sku, comparePrice, isFeatured"});
+    }
+    const updated = await Product.findOneAndUpdate(
+      {_id: req.params.id , isActive: true},
+      updates,
+      {
+        new: true, runValidators: true
+      }
+    );
+    res.status(200).json({
+      success:true, 
+      message: "Additional details is updated",
+      data: updated,
+    });
+  } catch (error) {
+      res.status(500).json({success: false, message: error.message});
+  }
+};
+
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findOne({ _id: req.params.id, isActive: true });
@@ -201,5 +255,6 @@ module.exports = {
   getCategories,
   createProduct,
   updateProduct,
+  updateProductDetails,
   deleteProduct,
 };

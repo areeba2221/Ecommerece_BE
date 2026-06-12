@@ -3,7 +3,8 @@ const {
   getProducts, 
   getProduct, 
   createProduct, 
-  updateProduct, 
+  updateProduct,
+  updateProductDetails, 
   deleteProduct,
   getCategories 
 } = require('../controllers/productController');
@@ -19,6 +20,8 @@ router.route('/categories')
 router.route('/')
   .get(getProducts)
   .post(protect, upload.array('images', 5), createProduct); 
+
+  
 
 router.route('/:id')
   .get(getProduct)
