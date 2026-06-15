@@ -3,12 +3,13 @@ const {
   getProducts, 
   getProduct, 
   createProduct, 
-  updateProduct,
-  updateProductDetails, 
+  updateProduct, 
   deleteProduct,
   getCategories 
 } = require('../controllers/productController');
 const { protect } = require('../middleware/auth');
+const { uploadProductImages } = require('../config/cloudinary');
+
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
@@ -19,9 +20,7 @@ router.route('/categories')
 
 router.route('/')
   .get(getProducts)
-  .post(protect, upload.array('images', 5), createProduct); 
-
-  
+  .post( upload.array('images', 5), createProduct);   
 
 router.route('/:id')
   .get(getProduct)

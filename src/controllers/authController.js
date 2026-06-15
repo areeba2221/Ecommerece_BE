@@ -89,6 +89,13 @@ const login = asyncHandler(async (req, res) => {
   authResponse(res, 200, user);
 });
 
+const logout = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+});
+
 const getMe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
   res.status(200).json({ success: true, data: user });
@@ -151,6 +158,7 @@ const getUsers = asyncHandler(async (req, res) => {
 module.exports = {
   register,
   login,
+  logout,
   getMe,
   updateMe,
   changePassword,
