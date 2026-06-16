@@ -1,30 +1,49 @@
-const express = require('express');
-const { 
-  getProducts, 
-  getProduct, 
-  createProduct, 
-  updateProduct, 
+const express = require("express");
+const router  = express.Router();
+const {
+  getProducts,
+  getProduct,
+  getProductBySlug,
+  createProduct,
+  updateProduct,
   deleteProduct,
-  getCategories 
-} = require('../controllers/productController');
-const { protect } = require('../middleware/auth');
-const { uploadProductImages } = require('../config/cloudinary');
+  deleteProductImage,
+  addReview,
+  getCategories,
+} = require("../controllers/productController");
+const { protect, authorise } = require("../middleware/auth");
+const { uploadProductImages } = require("../config/cloudinary");
 
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const handleUpload = (uploadFn) => (req, res, next) => {
+  uploadFn(req, res, (err) => {
+    if (!err) return next();
+    const status = err.code === "LIMIT_FILE_SIZE"  ? 413
+                 : err.code === "LIMIT_FILE_COUNT" ? 400
+                 : 400;
+    return res.status(status).json({ success: false, message: err.message });
+  });
+};
 
-const router = express.Router();
+router.get("/",            getProducts);
+router.get("/categories",  getCategories);
+router.get("/slug/:slug",  getProductBySlug);
+router.get("/:id",         getProduct);
 
-router.route('/categories')
-  .get(getCategories);
+router.post("/:id/reviews", protect, addReview);
 
-router.route('/')
-  .get(getProducts)
-  .post( upload.array('images', 5), createProduct);   
+router.post(
+  "/",
+  handleUpload(uploadProductImages.array("images", 5)), 
+  createProduct
+);
 
-router.route('/:id')
-  .get(getProduct)
-  .put(protect, upload.array('images', 5), updateProduct)
-  .delete(protect, deleteProduct);
+router.put(
+  "/:id",
+  handleUpload(uploadProductImages.array("images", 5)),
+  updateProduct
+);
+
+router.delete("/:id",                  protect, authorise("admin"), deleteProduct);
+router.delete("/:id/images/:imageId",  protect, authorise("admin"), deleteProductImage);
 
 module.exports = router;
