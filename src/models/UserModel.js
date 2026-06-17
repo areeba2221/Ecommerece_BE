@@ -13,6 +13,26 @@ const addressSchema = new mongoose.Schema(
   { _id: true }
 );
 
+const cartItemSchema = new mongoose.Schema(
+  {
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: [1, "Quantity must be at least 1"],
+      default: 1,
+    },
+  },
+  {
+    _id: false,
+    timestamps: true
+  }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -46,6 +66,7 @@ const userSchema = new mongoose.Schema(
       match: [/^\+?[\d\s\-()]{7,20}$/, "Invalid phone number"],
     },
     addresses: [addressSchema],
+    cart: [cartItemSchema],
     avatar:   { type: String, default: "" },        
     isActive: { type: Boolean, default: true },
     passwordChangedAt: Date,

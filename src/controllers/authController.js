@@ -8,6 +8,8 @@ const signToken = (id) =>
         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
     });
 
+    
+
 const authResponse = (res, statusCode, user) => {
   const token = signToken(user._id);
   res.status(statusCode).json({
