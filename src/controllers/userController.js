@@ -1,5 +1,8 @@
 const User = require("../models/UserModel");
 const asyncHandler = require("../middleware/asyncHandler");
+const UserModel = require("../models/UserModel");
+const bcrypt = require("bcryptjs");
+
 
 const getUsers = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, search, role } = req.query;
@@ -69,5 +72,5 @@ module.exports = {
   getUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
 }

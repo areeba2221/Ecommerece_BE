@@ -4,9 +4,9 @@ const bcrypt = require("bcryptjs");
 const addressSchema = new mongoose.Schema(
   {
     street: { type: String, required: true, trim: true },
-    city:   { type: String, required: true, trim: true },
-    state:  { type: String, required: true, trim: true },
-    zip:    { type: String, required: true, trim: true },
+    city: { type: String, required: true, trim: true },
+    state: { type: String, required: true, trim: true },
+    zip: { type: String, required: true, trim: true },
     country: { type: String, required: true, trim: true, default: "PK" },
     isDefault: { type: Boolean, default: false },
   },
@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      select: false, 
+      select: false,
     },
     role: {
       type: String,
@@ -67,14 +67,21 @@ const userSchema = new mongoose.Schema(
     },
     addresses: [addressSchema],
     cart: [cartItemSchema],
-    avatar:   { type: String, default: "" },        
+    avatar: { type: String, default: "" },
     isActive: { type: Boolean, default: true },
     passwordChangedAt: Date,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    otp: { type: String, select: false },
+    otpExpiry: { type: Date },
+    isOtpVerified: {
+      type: Boolean,
+      default: false,
+    },
+
   },
   {
-    timestamps: true, 
+    timestamps: true,
     toJSON: {
       transform(_, ret) {
         delete ret.password;
