@@ -194,7 +194,7 @@ const sendOtp = asyncHandler(async (req, res) => {
   await user.save();
 
   await transporter.sendMail({
-    from:    `"Furniro Support" <${process.env.BREVO_USER}>`,
+    from:    `"Furniro Support" <${process.env.BREVO_SENDER_EMAIL}>`,
     to:      user.email,
     subject: "Password Reset OTP",
     html: `
@@ -208,8 +208,6 @@ const sendOtp = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, message: "OTP sent to your email" });
 });
-
-
 const verifyOtp = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
 
@@ -225,7 +223,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({
     email: email.toLowerCase(),
-  });
+  }).select("+otp");
 
   if (!user) {
     return res.status(404).json({
@@ -244,8 +242,10 @@ const verifyOtp = asyncHandler(async (req, res) => {
   const otpExpired =
     !user.otpExpiry || user.otpExpiry < Date.now();
 
-  console.log("OTP Valid:", otpValid);
-  console.log("OTP Expired:", otpExpired);
+  console.log("Stored OTP Hash:", user.otp);
+console.log("OTP Entered:", otp);
+console.log("OTP Valid:", otpValid);
+console.log("OTP Expired:", otpExpired);
 
   if (!otpValid || otpExpired) {
     return res.status(400).json({
