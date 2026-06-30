@@ -7,11 +7,11 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: process.env.BREVO_USER,       
-    pass: process.env.BREVO_SMTP_KEY,   
+    user: process.env.BREVO_USER,
+    pass: process.env.BREVO_SMTP_KEY,
   },
   tls: {
-    rejectUnauthorized: false,          
+    rejectUnauthorized: false,
   },
 });
 
@@ -48,11 +48,10 @@ const createContactMessage = asyncHandler(async (req, res) => {
 
   // Admin notification email
   try {
-    
     const info = await transporter.sendMail({
       from: `"Website Contact" <${process.env.BREVO_SENDER_EMAIL}>`,
       to: process.env.BREVO_SENDER_EMAIL,
-      replyTo: email,                                                 
+      replyTo: email,
       subject: `New Contact Message - ${subject || "No Subject"}`,
       html: `
         <h2>New Customer Contact Request</h2>
@@ -71,7 +70,7 @@ const createContactMessage = asyncHandler(async (req, res) => {
   // Customer confirmation email
   try {
     const info = await transporter.sendMail({
-      from: `"Support Team" <${process.env.BREVO_SENDER_EMAIL}>`, 
+      from: `"Support Team" <${process.env.BREVO_SENDER_EMAIL}>`,
       to: email.trim(),
       subject: "We Have Received Your Message",
       html: `
@@ -85,7 +84,6 @@ const createContactMessage = asyncHandler(async (req, res) => {
         <p>Customer Support Team</p>
       `,
     });
-    
   } catch (error) {
     console.error("User email failed:", error.message);
   }
@@ -122,7 +120,7 @@ const updateContactStatus = asyncHandler(async (req, res) => {
 
   try {
     await transporter.sendMail({
-      from: `"Support Team" <${process.env.BREVO_SENDER_EMAIL}>`,  
+      from: `"Support Team" <${process.env.BREVO_SENDER_EMAIL}>`,
       to: updatedContact.email,
       subject: "Support Request Status Updated",
       html: `

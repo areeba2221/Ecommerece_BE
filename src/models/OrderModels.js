@@ -2,32 +2,36 @@ const mongoose = require("mongoose");
 
 const orderItemSchema = new mongoose.Schema(
   {
-    product:  { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true, },
-    name:     { type: String, required: true, },
-    price:    { type: Number, required: true,},
-    quantity: { type: Number, required: true, min: 1, },
-    image:    { type: String, default: "",},
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    quantity: { type: Number, required: true, min: 1 },
+    image: { type: String, default: "" },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const shippingAddressSchema = new mongoose.Schema(
   {
-    firstName: { type: String, required: true }, 
-    lastName:  { type: String, required: true },  
-    company:   { type: String, default: "" },      
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    company: { type: String, default: "" },
 
-    street:  { type: String, required: true },
-    city:    { type: String, required: true },
-    state:   { type: String, required: true },
-    zip:     { type: String, required: true },
+    street: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    zip: { type: String, required: true },
     country: { type: String, required: true },
 
-    phone: { type: String, required: true },    
+    phone: { type: String, required: true },
     email: { type: String, required: true },
-    additionalInformation: { type: String, default: ""},  
+    additionalInformation: { type: String, default: "" },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const orderSchema = new mongoose.Schema(
@@ -55,7 +59,7 @@ const orderSchema = new mongoose.Schema(
     paymentMethods: {
       type: String,
       required: true,
-      enum: ["cod"],
+      enum: ["cod", "stripe"],
     },
 
     paymentResult: {
@@ -87,14 +91,11 @@ const orderSchema = new mongoose.Schema(
   {
     timestamps: true,
     toJSON: { virtuals: true },
-  }
+  },
 );
 
 orderSchema.virtual("itemCount").get(function () {
-  return this.orderItems.reduce(
-    (sum, item) => sum + (item.quantity || 0),
-    0
-  );
+  return this.orderItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
 });
 
 module.exports = mongoose.model("Order", orderSchema);

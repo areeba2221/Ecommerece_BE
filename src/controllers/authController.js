@@ -4,7 +4,6 @@ const User = require("../models/UserModel");
 const asyncHandler = require("../middleware/asyncHandler");
 const nodemailer = require("nodemailer");
 
-
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
@@ -21,17 +20,16 @@ const transporter = nodemailer.createTransport({
   tls: { rejectUnauthorized: false },
 });
 
-
 const authResponse = (res, statusCode, user) => {
   const token = signToken(user._id);
   res.status(statusCode).json({
     success: true,
     token,
     user: {
-      _id:   user._id,
-      name:  user.name,
+      _id: user._id,
+      name: user.name,
       email: user.email,
-      role:  user.role,
+      role: user.role,
     },
   });
 };
@@ -94,7 +92,9 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
-  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  const user = await User.findOne({ email: email.toLowerCase() }).select(
+    "+password",
+  );
   if (!user || !(await user.matchPassword(password))) {
     return res.status(401).json({
       success: false,
@@ -179,7 +179,9 @@ const sendOtp = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
   }
 
   const user = await User.findOne({ email: email.toLowerCase() });
@@ -187,15 +189,15 @@ const sendOtp = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
-  const otp = generateOtp();                         
-  user.otp       = await bcrypt.hash(otp, 10);        
-  user.otpExpiry = Date.now() + 5 * 60 * 1000;     
+  const otp = generateOtp();
+  user.otp = await bcrypt.hash(otp, 10);
+  user.otpExpiry = Date.now() + 5 * 60 * 1000;
 
   await user.save();
 
   await transporter.sendMail({
-    from:    `"Furniro Support" <${process.env.BREVO_SENDER_EMAIL}>`,
-    to:      user.email,
+    from: `"Furniro Support" <${process.env.BREVO_SENDER_EMAIL}>`,
+    to: user.email,
     subject: "Password Reset OTP",
     html: `
       <h2>Password Reset Request</h2>
@@ -232,20 +234,9 @@ const verifyOtp = asyncHandler(async (req, res) => {
     });
   }
 
-  console.log("User OTP Exists:", !!user.otp);
-  console.log("OTP Expiry:", user.otpExpiry);
-  console.log("Current Time:", Date.now());
+  const otpValid = user.otp && (await bcrypt.compare(otp, user.otp));
 
-  const otpValid =
-    user.otp && (await bcrypt.compare(otp, user.otp));
-
-  const otpExpired =
-    !user.otpExpiry || user.otpExpiry < Date.now();
-
-  console.log("Stored OTP Hash:", user.otp);
-console.log("OTP Entered:", otp);
-console.log("OTP Valid:", otpValid);
-console.log("OTP Expired:", otpExpired);
+  const otpExpired = !user.otpExpiry || user.otpExpiry < Date.now();
 
   if (!otpValid || otpExpired) {
     return res.status(400).json({
@@ -266,31 +257,38 @@ const resetPassword = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ success: false, message: "Email and newPassword are required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email and newPassword are required" });
   }
   if (password.length < 6) {
-    return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+    return res.status(400).json({
+      success: false,
+      message: "Password must be at least 6 characters",
+    });
   }
 
-  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  const user = await User.findOne({ email: email.toLowerCase() }).select(
+    "+password",
+  );
   if (!user) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
- if (!user.isOtpVerified) {
-  return res.status(400).json({
-    success: false,
-    message: "Please verify OTP first",
-  });
-}
+  if (!user.isOtpVerified) {
+    return res.status(400).json({
+      success: false,
+      message: "Please verify OTP first",
+    });
+  }
 
-user.password = password;
+  user.password = password;
 
-user.otp = undefined;
-user.otpExpiry = undefined;
-user.isOtpVerified = false;
+  user.otp = undefined;
+  user.otpExpiry = undefined;
+  user.isOtpVerified = false;
 
-await user.save();
+  await user.save();
   authResponse(res, 200, user);
 });
 

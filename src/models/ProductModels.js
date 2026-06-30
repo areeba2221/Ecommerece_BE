@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
   {
-    user:    { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    name:    { type: String, required: true },
-    rating:  { type: Number, required: true, min: 1, max: 5 },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    name: { type: String, required: true },
+    rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, required: true, maxlength: 500 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const productSchema = new mongoose.Schema(
@@ -54,9 +54,9 @@ const productSchema = new mongoose.Schema(
     },
     images: [
       {
-        url:      { type: String, required: true },   
-        publicId: { type: String, default: "" },      
-        altText:  { type: String, default: "" },
+        url: { type: String, required: true },
+        publicId: { type: String, default: "" },
+        altText: { type: String, default: "" },
       },
     ],
     stock: {
@@ -68,7 +68,7 @@ const productSchema = new mongoose.Schema(
     sku: {
       type: String,
       unique: true,
-      sparse: true, 
+      sparse: true,
       trim: true,
       uppercase: true,
     },
@@ -79,22 +79,24 @@ const productSchema = new mongoose.Schema(
     },
     ratings: {
       average: { type: Number, default: 0, min: 0, max: 5 },
-      count:   { type: Number, default: 0 },
+      count: { type: Number, default: 0 },
     },
     reviews: [reviewSchema],
     isFeatured: { type: Boolean, default: false },
-    isActive:   { type: Boolean, default: true },
-    createdBy:  { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    isActive: { type: Boolean, default: true },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,
     toJSON: { virtuals: true },
-  }
+  },
 );
 
 productSchema.virtual("discountPercent").get(function () {
   if (!this.comparePrice || this.comparePrice <= this.price) return 0;
-  return Math.round(((this.comparePrice - this.price) / this.comparePrice) * 100);
+  return Math.round(
+    ((this.comparePrice - this.price) / this.comparePrice) * 100,
+  );
 });
 
 productSchema.pre("save", function (next) {
@@ -116,7 +118,7 @@ productSchema.methods.recalcRatings = function () {
     const sum = this.reviews.reduce((acc, r) => acc + r.rating, 0);
     this.ratings = {
       average: Math.round((sum / this.reviews.length) * 10) / 10,
-      count:   this.reviews.length,
+      count: this.reviews.length,
     };
   }
 };

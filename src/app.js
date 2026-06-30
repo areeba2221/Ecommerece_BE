@@ -1,11 +1,17 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const cors = require('cors');
-const express = require('express');
-const morgan = require('morgan');
+const cors = require("cors");
+const express = require("express");
+const morgan = require("morgan");
+const { stripeWebhook } = require("./controllers/orderController");
 
 const app = express();
 
+app.post(
+  "/api/orders/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhook,
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -13,7 +19,7 @@ app.use(
   cors({
     origin: process.env.ORIGIN || "*",
     credentials: true,
-  })
+  }),
 );
 
 if (process.env.NODE_ENV !== "production") {
@@ -33,9 +39,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes); 
+app.use("/api/orders", orderRoutes);
 app.use("/api/contact", contactRoutes);
-
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "API is running" });

@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "format": "npx prettier --write . --ignore-path .gitignore"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -21,9 +22,11 @@
     "morgan": "^1.10.0",
     "multer": "~1.4.5-lts.1",
     "multer-storage-cloudinary": "~4.0.0",
-    "nodemailer": "^8.0.11"
+    "nodemailer": "^8.0.11",
+    "stripe": "^22.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "prettier": "^3.9.4"
   }
 }

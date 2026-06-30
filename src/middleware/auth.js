@@ -9,7 +9,9 @@ const protect = async (req, res, next) => {
   }
 
   if (!token) {
-    return res.status(401).json({ success: false, message: "Not authorised — no token" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Not authorised — no token" });
   }
 
   try {
@@ -17,24 +19,30 @@ const protect = async (req, res, next) => {
     req.user = await User.findById(decoded.id).select("-password");
 
     if (!req.user || !req.user.isActive) {
-      return res.status(401).json({ success: false, message: "User no longer exists or is inactive" });
+      return res.status(401).json({
+        success: false,
+        message: "User no longer exists or is inactive",
+      });
     }
 
     next();
   } catch (err) {
-    return res.status(401).json({ success: false, message: "Token invalid or expired" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Token invalid or expired" });
   }
 };
 
-
-const authorise = (...roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
-    return res.status(403).json({
-      success: false,
-      message: `Role '${req.user.role}' is not permitted to perform this action`,
-    });
-  }
-  next();
-};
+const authorise =
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Role '${req.user.role}' is not permitted to perform this action`,
+      });
+    }
+    next();
+  };
 
 module.exports = { protect, authorise };

@@ -10,7 +10,7 @@ const addressSchema = new mongoose.Schema(
     country: { type: String, required: true, trim: true, default: "PK" },
     isDefault: { type: Boolean, default: false },
   },
-  { _id: true }
+  { _id: true },
 );
 
 const cartItemSchema = new mongoose.Schema(
@@ -29,8 +29,8 @@ const cartItemSchema = new mongoose.Schema(
   },
   {
     _id: false,
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
 const userSchema = new mongoose.Schema(
@@ -78,7 +78,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
   },
   {
     timestamps: true,
@@ -89,7 +88,7 @@ const userSchema = new mongoose.Schema(
         return ret;
       },
     },
-  }
+  },
 );
 
 userSchema.pre("save", async function (next) {
@@ -104,7 +103,3 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 module.exports = mongoose.model("User", userSchema);
-
-
-
-
