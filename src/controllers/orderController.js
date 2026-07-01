@@ -9,11 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const clearUserCart = async (userId) => {
   if (!userId) return;
 
-  await User.findByIdAndUpdate(
-    userId,
-    { $set: { cart: [] } },
-    { new: true },
-  );
+  await User.findByIdAndUpdate(userId, { $set: { cart: [] } }, { new: true });
 };
 
 //add stripe payment method
@@ -53,20 +49,27 @@ const createStripeSection = asyncHandler(async (req, res) => {
     });
   }
 
+  const customerEmail =
+    req.body?.shippingAddress?.email?.trim() || req.user?.email?.trim() || "";
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
     line_items,
     success_url: `${process.env.ORIGIN}/order-success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.ORIGIN}/checkout`,
+    customer_email: customerEmail || undefined,
 
     metadata: {
       userId: req.user._id.toString(),
-
+      customerEmail,
       items: JSON.stringify(req.body.items),
 
       orderData: JSON.stringify({
-        shippingAddress: req.body.shippingAddress,
+        shippingAddress: {
+          ...req.body.shippingAddress,
+          email: customerEmail,
+        },
         paymentMethods: "stripe",
         notes: req.body.notes,
       }),
@@ -100,13 +103,18 @@ const stripeWebhook = async (req, res) => {
     const userId = session.metadata.userId;
     const items = JSON.parse(session.metadata.items);
     const orderData = JSON.parse(session.metadata.orderData);
+    const customerEmail =
+      session.customer_details?.email ||
+      session.metadata?.customerEmail ||
+      orderData?.shippingAddress?.email ||
+      "";
 
     const productIds = items.map((item) => item.product);
     const dbProducts = await Product.find({
       _id: { $in: productIds },
       isActive: true,
     });
-    
+
     const orderItems = [];
 
     for (const item of items) {
@@ -120,7 +128,7 @@ const stripeWebhook = async (req, res) => {
         image: product.images?.[0]?.url || "",
       });
     }
-    
+
     const itemsPrice = orderItems.reduce(
       (sum, i) => sum + i.price * i.quantity,
       0,
@@ -133,7 +141,10 @@ const stripeWebhook = async (req, res) => {
     const order = await Order.create({
       user: userId,
       orderItems,
-      shippingAddress: orderData.shippingAddress,
+      shippingAddress: {
+        ...(orderData.shippingAddress || {}),
+        email: customerEmail,
+      },
       paymentMethods: "stripe",
       itemsPrice,
       shippingPrice,
@@ -145,6 +156,7 @@ const stripeWebhook = async (req, res) => {
       paymentResult: {
         id: session.payment_intent,
         status: session.payment_status,
+        email: customerEmail,
       },
     });
 
@@ -155,11 +167,10 @@ const stripeWebhook = async (req, res) => {
         }),
       ),
     );
-    
+
     await clearUserCart(userId);
 
     console.log("order created successfully:", order._id);
-
   }
   res.status(200).json({ received: true });
 };
